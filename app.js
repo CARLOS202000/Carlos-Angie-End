@@ -290,7 +290,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let isDragging = false;
     let startX = 0;
     let offset = 0;
-    let velocity = 0.3; // velocidad automática
+    let velocity = 0; // velocidad automática
     let moved = false;
 
     // ================= MENSAJES =================
