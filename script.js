@@ -9,44 +9,42 @@ var span = document.getElementsByClassName("close")[0];
 
 // 🔁 LOOP POR SECCIÓN REPETIR (CONTROL TOTAL)
 var sectionLoopMap = {
-    3: true,  // sección 3 repite audio
-    4: true,  // sección 4 también repite
-    10: true,  // seccion tiempo
-    11: true,  // seccion ser nv
-    // 8: true,
+    3: true,
+    4: true,
+    10: true,
+    11: true,
 };
 
 // Lista de audios  
 var audios = [
-    "audio/Carlos ✨.mp3",      // 0
-    "audio/Quererte.mp3",      // 1
-    "audio/Carlos1💔.mp3",     // 2
-    "audio/Toa.mp3",           // 3
-    "audio/Olvidándote.mp3",   // 4
-    "audio/Consentida.mp3",    // 5
-    "audio/Carlos2💔.mp3",     // 6
+    "audio/Carlos ✨.mp3",
+    "audio/Quererte.mp3",
+    "audio/Carlos1💔.mp3",
+    "audio/Toa.mp3",
+    "audio/Olvidándote.mp3",
+    "audio/Consentida.mp3",
+    "audio/Carlos2💔.mp3",
 ];
 
 // 🎯 MAPEO DE SECCIONES → AUDIO
 var sectionAudioMap = {
-    0: 0,  // sección 0 → audio 0
-    1: 0,  // sección 1 → audio 1
+    0: 0,
+    1: 0,
     2: 0,
-    3: 1, //cubo , quererte
-    4: 3, //yellou 
+    3: 1,
+    4: 3,
 
-    // 🔥 varias secciones mismo audio
-    5: 3, //texto
-    6: 3, //texto
-    7: 3, //texto
-    8: 4, //carta Olvidandote
-    9: 4, //carrusel Olvidandote
-    10:2, //Tiempo
-    11:5, // Ser Nv
-    12:6, //Ser Nv
-    13:6, //Ser Nv
-    14:6, //Ser Nv
-    15:6 //Ser Nv
+    5: 3,
+    6: 3,
+    7: 3,
+    8: 4,
+    9: 4,
+    10: 2,
+    11: 5,
+    12: 6,
+    13: 6,
+    14: 6,
+    15: 6
 };
 
 // Audio base
@@ -119,29 +117,35 @@ btn.onclick = function() {
 
 audio.onended = function() {
 
-    // 🔥 Si la sección actual tiene loop → repite
     if (sectionLoopMap[currentSectionIndex]) {
         audio.currentTime = 0;
         audio.play();
         return;
     }
 
-    // Si NO tiene loop → comportamiento normal (no hace nada)
 }
 
 // ===============================
-// SCROLL INTELIGENTE 🔥
+// SCROLL INTELIGENTE 🔥 (MEJORADO)
 // ===============================
 
 var sections = document.querySelectorAll(".tab");
 
+// 🔥 NUEVA DETECCIÓN (ESTABLE EN MÓVIL)
 function getCurrentSection() {
     let index = 0;
+    let minDistance = Infinity;
 
     sections.forEach((section, i) => {
         let rect = section.getBoundingClientRect();
 
-        if (rect.top <= window.innerHeight / 2 && rect.bottom >= window.innerHeight / 2) {
+        let screenCenter = window.innerHeight / 2;
+        let sectionCenter = rect.top + rect.height / 2;
+
+        let distance = Math.abs(screenCenter - sectionCenter);
+
+        if (distance < minDistance) {
+            minDistance = distance;
             index = i;
         }
     });
@@ -149,7 +153,8 @@ function getCurrentSection() {
     return index;
 }
 
-window.addEventListener("scroll", () => {
+// 🔥 LÓGICA ORIGINAL PERO SEPARADA
+function handleScroll() {
 
     let newSectionIndex = getCurrentSection();
 
@@ -170,8 +175,17 @@ window.addEventListener("scroll", () => {
         }
     }
 
+}
+
+// 🔥 SCROLL OPTIMIZADO
+window.addEventListener("scroll", () => {
+    requestAnimationFrame(handleScroll);
 });
 
+// 🔥 SOPORTE EXTRA PARA MÓVIL
+window.addEventListener("touchmove", () => {
+    requestAnimationFrame(handleScroll);
+});
 
 
 
