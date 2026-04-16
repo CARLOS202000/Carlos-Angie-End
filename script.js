@@ -1,193 +1,53 @@
-// Obtener elementos del DOM 
-// ===============================
-// CONFIGURACIÓN DE AUDIOS 🔥
-// ===============================
-
+// Obtener elementos del DOM
 var modal = document.getElementById('myModal');
 var btn = document.getElementById("playAudio");
 var span = document.getElementsByClassName("close")[0];
-
-// 🔁 LOOP POR SECCIÓN REPETIR (CONTROL TOTAL)
-var sectionLoopMap = {
-    3: true,
-    4: true,
-    10: true,
-    11: true,
-};
-
-// Lista de audios  
 var audios = [
     "audio/Carlos ✨.mp3",
-    "audio/Quererte.mp3",
-    "audio/Carlos1💔.mp3",
     "audio/Toa.mp3",
+    "audio/Quererte.mp3",
+    "audio/Quererte.mp3",
     "audio/Olvidándote.mp3",
+    "audio/Carlos1💔.mp3",
     "audio/Consentida.mp3",
     "audio/Carlos2💔.mp3",
 ];
-
-// 🎯 MAPEO DE SECCIONES → AUDIO
-var sectionAudioMap = {
-    0: 0,
-    1: 0,
-    2: 0,
-    3: 1,
-    4: 3,
-
-    5: 3,
-    6: 3,
-    7: 3,
-    8: 4,
-    9: 4,
-    10: 2,
-    11: 5,
-    12: 6,
-    13: 6,
-    14: 6,
-    15: 6
-};
-
-// Audio base
-var audio = document.getElementById("myAudio");
 var currentAudioIndex = 0;
-var currentSectionIndex = -1;
+var audio = document.getElementById("myAudio");
 
-// ===============================
-// MODAL
-// ===============================
-
+// Mostrar el modal al cargar la página
 window.onload = function() {
     modal.style.display = "block";
 }
 
+// Cerrar el modal al hacer clic en la X
 span.onclick = function() {
     modal.style.display = "none";
 }
 
+// Cerrar el modal al hacer clic fuera del área del modal
 window.onclick = function(event) {
     if (event.target == modal) {
         modal.style.display = "none";
     }
 }
 
-// ===============================
-// FADE
-// ===============================
-
-function fadeOut(audio, callback) {
-    let fade = setInterval(() => {
-        if (audio.volume > 0.05) {
-            audio.volume -= 0.05;
-        } else {
-            clearInterval(fade);
-            audio.pause();
-            audio.volume = 0;
-            if (callback) callback();
-        }
-    }, 80);
-}
-
-function fadeIn(audio) {
-    audio.volume = 0;
-    audio.play();
-
-    let fade = setInterval(() => {
-        if (audio.volume < 0.95) {
-            audio.volume += 0.05;
-        } else {
-            audio.volume = 1;
-            clearInterval(fade);
-        }
-    }, 80);
-}
-
-// ===============================
-// PLAY INICIAL
-// ===============================
-
+// Reproducir audio al hacer clic en el botón
 btn.onclick = function() {
     audio.src = audios[currentAudioIndex];
-    fadeIn(audio);
-    modal.style.display = "none";
+    audio.play();
+    modal.style.display = "none"; // Opcional: ocultar el modal después de reproducir el audio
 }
 
-// ===============================
-// LOOP INTELIGENTE 🔁
-// ===============================
-
+// Reproducir el siguiente audio al finalizar el actual
 audio.onended = function() {
-
-    if (sectionLoopMap[currentSectionIndex]) {
-        audio.currentTime = 0;
-        audio.play();
-        return;
-    }
-
+    currentAudioIndex = (currentAudioIndex + 1) % audios.length;
+    audio.src = audios[currentAudioIndex];
+    audio.play();
 }
 
-// ===============================
-// SCROLL INTELIGENTE 🔥
-// ===============================
-
-var sections = document.querySelectorAll(".tab");
-
-function getCurrentSection() {
-    let index = 0;
-    let minDistance = Infinity;
-
-    sections.forEach((section, i) => {
-        let rect = section.getBoundingClientRect();
-
-        let screenCenter = window.innerHeight / 2;
-        let sectionCenter = rect.top + rect.height / 2;
-
-        let distance = Math.abs(screenCenter - sectionCenter);
-
-        if (distance < minDistance) {
-            minDistance = distance;
-            index = i;
-        }
-    });
-
-    return index;
-}
-
-function handleScroll() {
-
-    let newSectionIndex = getCurrentSection();
-
-    if (newSectionIndex !== currentSectionIndex) {
-        currentSectionIndex = newSectionIndex;
-
-        let newAudioIndex = sectionAudioMap[currentSectionIndex];
-
-        if (newAudioIndex === undefined) return;
-
-        if (newAudioIndex !== currentAudioIndex) {
-            currentAudioIndex = newAudioIndex;
-
-            fadeOut(audio, () => {
-                audio.src = audios[currentAudioIndex];
-                fadeIn(audio);
-            });
-        }
-    }
-}
-
-// 🔥 EVENTOS CORREGIDOS PARA MÓVIL
-window.addEventListener("scroll", handleScroll, { passive: true });
-window.addEventListener("touchend", handleScroll, { passive: true });
-
-// 🔥 RESPALDO PARA MÓVIL
-setInterval(() => {
-    handleScroll();
-}, 200);
 
 
-
-// ===============================
-// SISTEMA DE EVENTOS (NO TOCADO)
-// ===============================
 
 function bindEvent(element, eventName, eventHandler) {
     element.addEventListener(eventName, eventHandler, { passive: false });
@@ -324,6 +184,7 @@ function Viewport(data) {
   this.currentSide = 0;
   this.calculatedSide = 0;
 
+
   bindEvent(document, 'mousedown', function() {
     self.down = true;
   });
@@ -351,8 +212,11 @@ function Viewport(data) {
     self.lastY  = self.mouseY;
   });
 
-  // 🔥 CORREGIDO (SIN BLOQUEAR SCROLL)
   bindEvent(document, 'touchmove', function(e) {
+    if (e.preventDefault) {
+        e.preventDefault();
+    }
+
 
     if(e.touches.length == 1) {
 
@@ -371,7 +235,170 @@ function Viewport(data) {
   setInterval(this.animate.bind(this), this.fps);
 
 }
-
 events.implement(Viewport);
+Viewport.prototype.animate = function() {
 
-// (TODO EL RESTO DEL CÓDIGO DEL CUBO SE MANTIENE EXACTAMENTE IGUAL)
+  this.distanceX = (this.mouseX - this.lastX);
+  this.distanceY = (this.mouseY - this.lastY);
+
+  this.lastX = this.mouseX;
+  this.lastY = this.mouseY;
+
+  if(this.down) {
+    this.torqueX = this.torqueX * this.sensivityFade + (this.distanceX * this.speed - this.torqueX) * this.sensivity;
+    this.torqueY = this.torqueY * this.sensivityFade + (this.distanceY * this.speed - this.torqueY) * this.sensivity;
+  }
+
+  if(Math.abs(this.torqueX) > 1.0 || Math.abs(this.torqueY) > 1.0) {
+    if(!this.down) {
+      this.torqueX *= this.sensivityFade;
+      this.torqueY *= this.sensivityFade;
+    }
+
+    this.positionY -= this.torqueY;
+
+    if(this.positionY > 360) {
+      this.positionY -= 360;
+    } else if(this.positionY < 0) {
+      this.positionY += 360;
+    }
+
+    if(this.positionY > 90 && this.positionY < 270) {
+      this.positionX -= this.torqueX;
+
+      if(!this.upsideDown) {
+        this.upsideDown = true;
+        this.emit('upsideDown', { upsideDown: this.upsideDown });
+      }
+
+    } else {
+
+      this.positionX += this.torqueX;
+
+      if(this.upsideDown) {
+        this.upsideDown = false;
+        this.emit('upsideDown', { upsideDown: this.upsideDown });
+      }
+    }
+
+    if(this.positionX > 360) {
+      this.positionX -= 360;
+    } else if(this.positionX < 0) {
+      this.positionX += 360;
+    }
+
+    if(!(this.positionY >= 46 && this.positionY <= 130) && !(this.positionY >= 220 && this.positionY <= 308)) {
+      if(this.upsideDown) {
+        if(this.positionX >= 42 && this.positionX <= 130) {
+          this.calculatedSide = 3;
+        } else if(this.positionX >= 131 && this.positionX <= 223) {
+          this.calculatedSide = 2;
+        } else if(this.positionX >= 224 && this.positionX <= 314) {
+          this.calculatedSide = 5;
+        } else {
+          this.calculatedSide = 4;
+        }
+      } else {
+        if(this.positionX >= 42 && this.positionX <= 130) {
+          this.calculatedSide = 5;
+        } else if(this.positionX >= 131 && this.positionX <= 223) {
+          this.calculatedSide = 4;
+        } else if(this.positionX >= 224 && this.positionX <= 314) {
+          this.calculatedSide = 3;
+        } else {
+          this.calculatedSide = 2;
+        }
+      }
+    } else {
+      if(this.positionY >= 46 && this.positionY <= 130) {
+        this.calculatedSide = 6;
+      }
+
+      if(this.positionY >= 220 && this.positionY <= 308) {
+        this.calculatedSide = 1;
+      }
+    }
+
+    if(this.calculatedSide !== this.currentSide) {
+      this.currentSide = this.calculatedSide;
+      this.emit('sideChange');
+    }
+
+  }
+
+  this.element.style[userPrefix.js + 'Transform'] = 'rotateX(' + this.positionY + 'deg) rotateY(' + this.positionX + 'deg)';
+
+  if(this.positionY != this.previousPositionY || this.positionX != this.previousPositionX) {
+    this.previousPositionY = this.positionY;
+    this.previousPositionX = this.positionX;
+
+    this.emit('rotate');
+
+  }
+
+}
+var viewport = new Viewport({
+  element: document.getElementsByClassName('cube')[0],
+  fps: 20,
+  sensivity: .1,
+  sensivityFade: .93,
+  speed: 2,
+  touchSensivity: 1.5
+});
+
+function Cube(data) {
+  var self = this;
+
+  this.element = data.element;
+  this.sides = this.element.getElementsByClassName('side');
+
+  this.viewport = data.viewport;
+  this.viewport.on('rotate', function() {
+    self.rotateSides();
+  });
+  this.viewport.on('upsideDown', function(obj) {
+    self.upsideDown(obj);
+  });
+  this.viewport.on('sideChange', function() {
+    self.sideChange();
+  });
+}
+Cube.prototype.rotateSides = function() {
+  var viewport = this.viewport;
+  if(viewport.positionY > 90 && viewport.positionY < 270) {
+    this.sides[0].getElementsByClassName('cube-image')[0].style[userPrefix.js + 'Transform'] = 'rotate(' + (viewport.positionX + viewport.torqueX) + 'deg)';
+    this.sides[5].getElementsByClassName('cube-image')[0].style[userPrefix.js + 'Transform'] = 'rotate(' + -(viewport.positionX + 180 + viewport.torqueX) + 'deg)';
+  } else {
+    this.sides[0].getElementsByClassName('cube-image')[0].style[userPrefix.js + 'Transform'] = 'rotate(' + (viewport.positionX - viewport.torqueX) + 'deg)';
+    this.sides[5].getElementsByClassName('cube-image')[0].style[userPrefix.js + 'Transform'] = 'rotate(' + -(viewport.positionX + 180 - viewport.torqueX) + 'deg)';
+  }
+}
+Cube.prototype.upsideDown = function(obj) {
+
+  var deg = (obj.upsideDown == true) ? '180deg' : '0deg';
+  var i = 5;
+
+  while(i > 0 && --i) {
+    this.sides[i].getElementsByClassName('cube-image')[0].style[userPrefix.js + 'Transform'] = 'rotate(' + deg + ')';
+  }
+
+}
+Cube.prototype.sideChange = function() {
+
+  for(var i = 0; i < this.sides.length; ++i) {
+    this.sides[i].getElementsByClassName('cube-image')[0].className = 'cube-image';    
+  }
+
+  this.sides[this.viewport.currentSide - 1].getElementsByClassName('cube-image')[0].className = 'cube-image active';
+
+}
+
+new Cube({
+  viewport: viewport,
+  element: document.getElementsByClassName('cube')[0]
+});
+
+
+
+
+
