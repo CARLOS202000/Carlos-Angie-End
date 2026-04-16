@@ -1,50 +1,211 @@
 // Obtener elementos del DOM
+// ===============================
+// CONFIGURACIÓN DE AUDIOS 🔥
+// ===============================
+
 var modal = document.getElementById('myModal');
 var btn = document.getElementById("playAudio");
 var span = document.getElementsByClassName("close")[0];
-var audios = [
-    "audio/Carlos ✨.mp3",
-    "audio/Toa.mp3",
-    "audio/Quererte.mp3",
-    "audio/Quererte.mp3",
-    "audio/Olvidándote.mp3",
-    "audio/Carlos1💔.mp3",
-    "audio/Consentida.mp3",
-    "audio/Carlos2💔.mp3",
-];
-var currentAudioIndex = 0;
-var audio = document.getElementById("myAudio");
 
-// Mostrar el modal al cargar la página
+// 🔁 LOOP POR SECCIÓN REPETIR (CONTROL TOTAL)
+var sectionLoopMap = {
+    3: true,  // sección 3 repite audio
+    4: true,  // sección 4 también repite
+    10: true,  // seccion tiempo
+    11: true,  // seccion ser nv
+    // 8: true,
+};
+
+// Lista de audios  
+var audios = [
+    "audio/Carlos ✨.mp3",      // 0
+    "audio/Quererte.mp3",      // 1
+    "audio/Carlos1💔.mp3",     // 2
+    "audio/Toa.mp3",           // 3
+    "audio/Olvidándote.mp3",   // 4
+    "audio/Consentida.mp3",    // 5
+    "audio/Carlos2💔.mp3",     // 6
+];
+
+// 🎯 MAPEO DE SECCIONES → AUDIO
+var sectionAudioMap = {
+    0: 0,  // sección 0 → audio 0
+    1: 0,  // sección 1 → audio 1
+    2: 0,
+    3: 1, //cubo , quererte
+    4: 3, //yellou 
+
+    // 🔥 varias secciones mismo audio
+    5: 3, //texto
+    6: 3, //texto
+    7: 3, //texto
+    8: 4, //carta Olvidandote
+    9: 4, //carrusel Olvidandote
+    10:2, //Tiempo
+    11:5, // Ser Nv
+    12:6, //Ser Nv
+    13:6, //Ser Nv
+    14:6, //Ser Nv
+    15:6 //Ser Nv
+};
+
+// Audio base
+var audio = document.getElementById("myAudio");
+var currentAudioIndex = 0;
+var currentSectionIndex = -1;
+
+// ===============================
+// MODAL
+// ===============================
+
 window.onload = function() {
     modal.style.display = "block";
 }
 
-// Cerrar el modal al hacer clic en la X
 span.onclick = function() {
     modal.style.display = "none";
 }
 
-// Cerrar el modal al hacer clic fuera del área del modal
 window.onclick = function(event) {
     if (event.target == modal) {
         modal.style.display = "none";
     }
 }
 
-// Reproducir audio al hacer clic en el botón
-btn.onclick = function() {
-    audio.src = audios[currentAudioIndex];
-    audio.play();
-    modal.style.display = "none"; // Opcional: ocultar el modal después de reproducir el audio
+// ===============================
+// FADE
+// ===============================
+
+function fadeOut(audio, callback) {
+    let fade = setInterval(() => {
+        if (audio.volume > 0.05) {
+            audio.volume -= 0.05;
+        } else {
+            clearInterval(fade);
+            audio.pause();
+            audio.volume = 0;
+            if (callback) callback();
+        }
+    }, 80);
 }
 
-// Reproducir el siguiente audio al finalizar el actual
-audio.onended = function() {
-    currentAudioIndex = (currentAudioIndex + 1) % audios.length;
-    audio.src = audios[currentAudioIndex];
+function fadeIn(audio) {
+    audio.volume = 0;
     audio.play();
+
+    let fade = setInterval(() => {
+        if (audio.volume < 0.95) {
+            audio.volume += 0.05;
+        } else {
+            audio.volume = 1;
+            clearInterval(fade);
+        }
+    }, 80);
 }
+
+// ===============================
+// PLAY INICIAL
+// ===============================
+
+btn.onclick = function() {
+    audio.src = audios[currentAudioIndex];
+    fadeIn(audio);
+    modal.style.display = "none";
+}
+
+// ===============================
+// LOOP INTELIGENTE 🔁
+// ===============================
+
+audio.onended = function() {
+
+    // 🔥 Si la sección actual tiene loop → repite
+    if (sectionLoopMap[currentSectionIndex]) {
+        audio.currentTime = 0;
+        audio.play();
+        return;
+    }
+
+    // Si NO tiene loop → comportamiento normal (no hace nada)
+}
+
+// ===============================
+// SCROLL INTELIGENTE 🔥
+// ===============================
+
+var sections = document.querySelectorAll(".tab");
+
+function getCurrentSection() {
+    let index = 0;
+
+    sections.forEach((section, i) => {
+        let rect = section.getBoundingClientRect();
+
+        if (rect.top <= window.innerHeight / 2 && rect.bottom >= window.innerHeight / 2) {
+            index = i;
+        }
+    });
+
+    return index;
+}
+
+window.addEventListener("scroll", () => {
+
+    let newSectionIndex = getCurrentSection();
+
+    if (newSectionIndex !== currentSectionIndex) {
+        currentSectionIndex = newSectionIndex;
+
+        let newAudioIndex = sectionAudioMap[currentSectionIndex];
+
+        if (newAudioIndex === undefined) return;
+
+        if (newAudioIndex !== currentAudioIndex) {
+            currentAudioIndex = newAudioIndex;
+
+            fadeOut(audio, () => {
+                audio.src = audios[currentAudioIndex];
+                fadeIn(audio);
+            });
+        }
+    }
+
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
